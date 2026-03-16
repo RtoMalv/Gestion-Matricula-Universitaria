@@ -1,0 +1,53 @@
+﻿@model ProyectoFinalAlvaradoMoraMauricio.Models.Matricula
+
+@{
+    ViewData["Title"] = "Crear matrícula";
+}
+
+<h1>Crear matrícula</h1>
+
+<h4>Matrícula</h4>
+<hr />
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="mb-3">
+                <label asp-for="EstudianteId" class="form-label"></label>
+                <select asp-for="EstudianteId" class="form-select" asp-items="ViewBag.EstudianteId"></select>
+                <span asp-validation-for="EstudianteId" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="CursoId" class="form-label"></label>
+                <select asp-for="CursoId" class="form-select" asp-items="ViewBag.CursoId"></select>
+                <span asp-validation-for="CursoId" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="FechaMatricula" class="form-label"></label>
+                <input asp-for="FechaMatricula" class="form-control" type="date" />
+                <span asp-validation-for="FechaMatricula" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Estado" class="form-label"></label>
+                <input asp-for="Estado" class="form-control" />
+                <span asp-validation-for="Estado" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <button type="submit" class="btn btn-success">Guardar</button>
+                <a asp-action="Index" class="btn btn-secondary">Volver</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,38 @@
+﻿@model IEnumerable<ProyectoFinalAlvaradoMoraMauricio.Models.Matricula>
+
+@{
+    ViewData["Title"] = "Matrículas";
+}
+
+<h1 class="mb-3">Matrículas</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">Nueva matrícula</a>
+</p>
+
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>Estudiante</th>
+            <th>Curso</th>
+            <th>Fecha</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Estudiante?.Nombre</td>
+                <td>@item.Curso?.Nombre</td>
+                <td>@item.FechaMatricula.ToShortDateString()</td>
+                <td>@item.Estado</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@item.MatriculaId" class="btn btn-info btn-sm">Ver</a>
+                    <a asp-action="Delete" asp-route-id="@item.MatriculaId" class="btn btn-danger btn-sm">Eliminar</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

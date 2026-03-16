@@ -1,32 +1,33 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using ProyectoFinalAlvaradoMoraMauricio.Data;
 using ProyectoFinalAlvaradoMoraMauricio.Models;
 
 namespace ProyectoFinalAlvaradoMoraMauricio.Controllers
 {
-    public class CarrerasController : Controller
+    public class CursosController : Controller
     {
         private readonly ApplicationDbContext _context;
 
-        public CarrerasController(ApplicationDbContext context)
+        public CursosController(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        // GET: Carreras
+        // GET: Cursos
         [AllowAnonymous]
         public async Task<IActionResult> Index()
         {
-            var carreras = await _context.Carreras
-                .OrderBy(c => c.Nombre)
-                .ToListAsync();
+            var cursos = _context.Cursos
+                .Include(c => c.Carrera)
+                .OrderBy(c => c.Nombre);
 
-            return View(carreras);
+            return View(await cursos.ToListAsync());
         }
 
-        // GET: Carreras/Details/5
+        // GET: Cursos/Details/5
         [AllowAnonymous]
         public async Task<IActionResult> Details(int? id)
         {
@@ -35,41 +36,44 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Controllers
                 return NotFound();
             }
 
-            var carrera = await _context.Carreras
-                .FirstOrDefaultAsync(c => c.CarreraId == id);
+            var curso = await _context.Cursos
+                .Include(c => c.Carrera)
+                .FirstOrDefaultAsync(m => m.CursoId == id);
 
-            if (carrera == null)
+            if (curso == null)
             {
                 return NotFound();
             }
 
-            return View(carrera);
+            return View(curso);
         }
 
-        // GET: Carreras/Create
+        // GET: Cursos/Create
         [Authorize(Roles = "Admin")]
         public IActionResult Create()
         {
+            ViewData["CarreraId"] = new SelectList(_context.Carreras, "CarreraId", "Nombre");
             return View();
         }
 
-        // POST: Carreras/Create
+        // POST: Cursos/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Create([Bind("CarreraId,Nombre,Descripcion,Activa")] Carrera carrera)
+        public async Task<IActionResult> Create([Bind("CursoId,Codigo,Nombre,Creditos,CarreraId")] Curso curso)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(carrera);
+                _context.Add(curso);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
 
-            return View(carrera);
+            ViewData["CarreraId"] = new SelectList(_context.Carreras, "CarreraId", "Nombre", curso.CarreraId);
+            return View(curso);
         }
 
-        // GET: Carreras/Edit/5
+        // GET: Cursos/Edit/5
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Edit(int? id)
         {
@@ -78,22 +82,23 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Controllers
                 return NotFound();
             }
 
-            var carrera = await _context.Carreras.FindAsync(id);
-            if (carrera == null)
+            var curso = await _context.Cursos.FindAsync(id);
+            if (curso == null)
             {
                 return NotFound();
             }
 
-            return View(carrera);
+            ViewData["CarreraId"] = new SelectList(_context.Carreras, "CarreraId", "Nombre", curso.CarreraId);
+            return View(curso);
         }
 
-        // POST: Carreras/Edit/5
+        // POST: Cursos/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> Edit(int id, [Bind("CarreraId,Nombre,Descripcion,Activa")] Carrera carrera)
+        public async Task<IActionResult> Edit(int id, [Bind("CursoId,Codigo,Nombre,Creditos,CarreraId")] Curso curso)
         {
-            if (id != carrera.CarreraId)
+            if (id != curso.CursoId)
             {
                 return NotFound();
             }
@@ -102,12 +107,12 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Controllers
             {
                 try
                 {
-                    _context.Update(carrera);
+                    _context.Update(curso);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!CarreraExists(carrera.CarreraId))
+                    if (!CursoExists(curso.CursoId))
                     {
                         return NotFound();
                     }
@@ -120,10 +125,11 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            return View(carrera);
+            ViewData["CarreraId"] = new SelectList(_context.Carreras, "CarreraId", "Nombre", curso.CarreraId);
+            return View(curso);
         }
 
-        // GET: Carreras/Delete/5
+        // GET: Cursos/Delete/5
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int? id)
         {
@@ -132,36 +138,37 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Controllers
                 return NotFound();
             }
 
-            var carrera = await _context.Carreras
-                .FirstOrDefaultAsync(c => c.CarreraId == id);
+            var curso = await _context.Cursos
+                .Include(c => c.Carrera)
+                .FirstOrDefaultAsync(m => m.CursoId == id);
 
-            if (carrera == null)
+            if (curso == null)
             {
                 return NotFound();
             }
 
-            return View(carrera);
+            return View(curso);
         }
 
-        // POST: Carreras/Delete/5
+        // POST: Cursos/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var carrera = await _context.Carreras.FindAsync(id);
-            if (carrera != null)
+            var curso = await _context.Cursos.FindAsync(id);
+            if (curso != null)
             {
-                _context.Carreras.Remove(carrera);
+                _context.Cursos.Remove(curso);
                 await _context.SaveChangesAsync();
             }
 
             return RedirectToAction(nameof(Index));
         }
 
-        private bool CarreraExists(int id)
+        private bool CursoExists(int id)
         {
-            return _context.Carreras.Any(e => e.CarreraId == id);
+            return _context.Cursos.Any(e => e.CursoId == id);
         }
     }
 }
