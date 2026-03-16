@@ -1,6 +1,51 @@
-﻿namespace ProyectoFinalAlvaradoMoraMauricio.Data
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using ProyectoFinalAlvaradoMoraMauricio.Models;
+using System.Collections.Generic;
+using System.Reflection.Emit;
+
+namespace ProyectoFinalAlvaradoMoraMauricio.Data
 {
-    public class ApplicationDbContext
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+            : base(options)
+        {
+        }
+
+        public DbSet<Carrera> Carreras { get; set; }
+        public DbSet<Curso> Cursos { get; set; }
+        public DbSet<Docente> Docentes { get; set; }
+        public DbSet<Estudiante> Estudiantes { get; set; }
+        public DbSet<Matricula> Matriculas { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            builder.Entity<Curso>()
+                .HasOne(c => c.Carrera)
+                .WithMany(ca => ca.Cursos)
+                .HasForeignKey(c => c.CarreraId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Estudiante>()
+                .HasOne(e => e.Carrera)
+                .WithMany(c => c.Estudiantes)
+                .HasForeignKey(e => e.CarreraId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Matricula>()
+                .HasOne(m => m.Estudiante)
+                .WithMany(e => e.Matriculas)
+                .HasForeignKey(m => m.EstudianteId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<Matricula>()
+                .HasOne(m => m.Curso)
+                .WithMany(c => c.Matriculas)
+                .HasForeignKey(m => m.CursoId)
+                .OnDelete(DeleteBehavior.Restrict);
+        }
     }
 }

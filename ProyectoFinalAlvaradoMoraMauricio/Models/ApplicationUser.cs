@@ -1,6 +1,9 @@
-﻿namespace ProyectoFinalAlvaradoMoraMauricio.Models
+﻿using Microsoft.AspNetCore.Identity;
+
+namespace ProyectoFinalAlvaradoMoraMauricio.Models
 {
-    public class ApplicationUser
+    public class ApplicationUser : IdentityUser
     {
+        public string NombreCompleto { get; set; } = string.Empty;
     }
 }
