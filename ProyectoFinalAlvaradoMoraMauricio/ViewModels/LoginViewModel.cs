@@ -4,12 +4,14 @@ namespace ProyectoFinalAlvaradoMoraMauricio.ViewModels
 {
     public class LoginViewModel
     {
-        [Required(ErrorMessage = "El correo es obligatorio.")]
-        [EmailAddress(ErrorMessage = "Debe ingresar un correo válido.")]
+        [Required]
+        [EmailAddress]
+        [Display(Name = "Correo electrónico")]
         public string Email { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "La contraseña es obligatoria.")]
+        [Required]
         [DataType(DataType.Password)]
+        [Display(Name = "Contraseña")]
         public string Password { get; set; } = string.Empty;
 
         [Display(Name = "Recordarme")]

@@ -1,0 +1,22 @@
+﻿@model ProyectoFinalAlvaradoMoraMauricio.Models.PeriodoAcademico
+
+@{
+    ViewData["Title"] = "Eliminar período";
+}
+
+<h2>Eliminar período académico</h2>
+
+<div class="alert alert-warning">
+    ¿Está seguro de que desea eliminar este período?
+</div>
+
+<dl class="row">
+    <dt class="col-sm-3">Nombre</dt>
+    <dd class="col-sm-9">@Model.NombrePeriodo</dd>
+</dl>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="PeriodoAcademicoId" />
+    <button type="submit" class="btn btn-danger">Eliminar</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>

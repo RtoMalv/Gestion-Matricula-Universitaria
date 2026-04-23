@@ -2,6 +2,8 @@
     ViewData["Title"] = "Acceso denegado";
 }
 
-<h1>Acceso denegado</h1>
-<p>No tiene permisos para acceder a este recurso.</p>
-<a asp-controller="Home" asp-action="Index" class="btn btn-primary">Volver al inicio</a>
+<div class="alert alert-warning mt-4">
+    <h4>Acceso denegado</h4>
+    <p>No tiene permisos para acceder a esta sección.</p>
+    <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Volver al inicio</a>
+</div>

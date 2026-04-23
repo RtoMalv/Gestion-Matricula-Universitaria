@@ -7,23 +7,35 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Models
     {
         public int CursoId { get; set; }
 
-        [Required(ErrorMessage = "El código del curso es obligatorio.")]
-        [StringLength(20, ErrorMessage = "El código no puede superar los 20 caracteres.")]
+        [Required]
+        [StringLength(20)]
         public string Codigo { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "El nombre del curso es obligatorio.")]
-        [StringLength(100, ErrorMessage = "El nombre no puede superar los 100 caracteres.")]
+        [Required]
+        [StringLength(120)]
         public string Nombre { get; set; } = string.Empty;
 
-        [Range(1, 10, ErrorMessage = "Los créditos deben estar entre 1 y 10.")]
+        [StringLength(300)]
+        public string? Descripcion { get; set; }
+
+        [Range(1, 10)]
         public int Creditos { get; set; }
 
-        [Display(Name = "Carrera")]
-        public int CarreraId { get; set; }
+        public bool Activo { get; set; } = true;
 
-        [ForeignKey("CarreraId")]
+        public ICollection<CarreraCurso> CarreraCursos { get; set; } = new List<CarreraCurso>();
+        public ICollection<CursoRequisito> RequisitosDelCurso { get; set; } = new List<CursoRequisito>();
+        public ICollection<CursoRequisito> EsRequisitoDe { get; set; } = new List<CursoRequisito>();
+        public ICollection<Grupo> Grupos { get; set; } = new List<Grupo>();
+
+        // Compatibilidad temporal con scaffolding viejo
+        [NotMapped]
+        public int? CarreraId { get; set; }
+
+        [NotMapped]
         public Carrera? Carrera { get; set; }
 
-        public ICollection<Matricula>? Matriculas { get; set; }
+        [NotMapped]
+        public string NombreMostrar => $"{Codigo} - {Nombre}";
     }
 }

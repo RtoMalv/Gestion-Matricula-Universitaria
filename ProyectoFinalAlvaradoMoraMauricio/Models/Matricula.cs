@@ -7,22 +7,32 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Models
     {
         public int MatriculaId { get; set; }
 
-        [Display(Name = "Estudiante")]
         public int EstudianteId { get; set; }
+        public Estudiante Estudiante { get; set; } = null!;
 
-        [ForeignKey("EstudianteId")]
-        public Estudiante? Estudiante { get; set; }
+        public int PeriodoAcademicoId { get; set; }
+        public PeriodoAcademico PeriodoAcademico { get; set; } = null!;
 
-        [Display(Name = "Curso")]
+        public DateTime FechaCreacion { get; set; } = DateTime.Now;
+        public DateTime? FechaConfirmada { get; set; }
+
+        [StringLength(20)]
+        public string Estado { get; set; } = "Borrador";
+
+        public ICollection<MatriculaDetalle> Detalles { get; set; } = new List<MatriculaDetalle>();
+
+        // Compatibilidad temporal con código viejo
+        [NotMapped]
         public int CursoId { get; set; }
 
-        [ForeignKey("CursoId")]
+        [NotMapped]
         public Curso? Curso { get; set; }
 
-        [DataType(DataType.Date)]
-        public DateTime FechaMatricula { get; set; } = DateTime.Now;
-
-        [StringLength(30, ErrorMessage = "El estado no puede superar los 30 caracteres.")]
-        public string Estado { get; set; } = "Activa";
+        [NotMapped]
+        public DateTime FechaMatricula
+        {
+            get => FechaCreacion;
+            set => FechaCreacion = value;
+        }
     }
 }

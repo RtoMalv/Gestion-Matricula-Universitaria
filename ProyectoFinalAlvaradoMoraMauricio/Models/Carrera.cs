@@ -6,16 +6,22 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Models
     {
         public int CarreraId { get; set; }
 
-        [Required(ErrorMessage = "El nombre de la carrera es obligatorio.")]
-        [StringLength(100, ErrorMessage = "El nombre no puede superar los 100 caracteres.")]
+        [Required]
+        [StringLength(20)]
+        public string Codigo { get; set; } = string.Empty;
+
+        [Required]
+        [StringLength(100)]
         public string Nombre { get; set; } = string.Empty;
 
-        [StringLength(250, ErrorMessage = "La descripción no puede superar los 250 caracteres.")]
+        [StringLength(300)]
         public string? Descripcion { get; set; }
+
+        public DateTime FechaCreacion { get; set; } = DateTime.Now;
 
         public bool Activa { get; set; } = true;
 
-        public ICollection<Curso>? Cursos { get; set; }
-        public ICollection<Estudiante>? Estudiantes { get; set; }
+        public ICollection<Estudiante> Estudiantes { get; set; } = new List<Estudiante>();
+        public ICollection<CarreraCurso> CarreraCursos { get; set; } = new List<CarreraCurso>();
     }
 }

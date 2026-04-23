@@ -1,0 +1,90 @@
+﻿@model ProyectoFinalAlvaradoMoraMauricio.ViewModels.CarreraCursoViewModel
+
+@{
+    ViewData["Title"] = "Malla curricular";
+    var cursosMalla = ViewBag.CursosMalla as List<ProyectoFinalAlvaradoMoraMauricio.Models.CarreraCurso>;
+}
+
+<h2>Malla curricular - @ViewBag.CarreraNombre</h2>
+
+<div class="card mb-4">
+    <div class="card-header">Agregar curso a la carrera</div>
+    <div class="card-body">
+        <form asp-action="Malla" method="post">
+            <input type="hidden" asp-for="CarreraId" />
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="mb-3">
+                <label asp-for="CursoId" class="form-label"></label>
+                <select asp-for="CursoId" class="form-control" asp-items="ViewBag.CursoId">
+                    <option value="">Seleccione un curso</option>
+                </select>
+                <span asp-validation-for="CursoId" class="text-danger"></span>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Nivel" class="form-label"></label>
+                    <input asp-for="Nivel" class="form-control" />
+                    <span asp-validation-for="Nivel" class="text-danger"></span>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label asp-for="CuatrimestreSugerido" class="form-label"></label>
+                    <input asp-for="CuatrimestreSugerido" class="form-control" />
+                    <span asp-validation-for="CuatrimestreSugerido" class="text-danger"></span>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Agregar curso</button>
+            <a asp-action="Index" class="btn btn-secondary">Volver a carreras</a>
+        </form>
+    </div>
+</div>
+
+<h4>Cursos asociados</h4>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Código</th>
+            <th>Curso</th>
+            <th>Nivel</th>
+            <th>Cuatrimestre</th>
+            <th style="width:140px;">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (cursosMalla != null && cursosMalla.Any())
+        {
+            @foreach (var item in cursosMalla.OrderBy(x => x.Nivel).ThenBy(x => x.CuatrimestreSugerido).ThenBy(x => x.Curso.Nombre))
+            {
+                <tr>
+                    <td>@item.Curso.Codigo</td>
+                    <td>@item.Curso.Nombre</td>
+                    <td>@item.Nivel</td>
+                    <td>@item.CuatrimestreSugerido</td>
+                    <td>
+                        <form asp-action="EliminarCursoMalla" method="post" class="d-inline">
+                            <input type="hidden" name="carreraId" value="@item.CarreraId" />
+                            <input type="hidden" name="cursoId" value="@item.CursoId" />
+                            <button type="submit" class="btn btn-danger btn-sm">Quitar</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="5">No hay cursos asociados a esta carrera.</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

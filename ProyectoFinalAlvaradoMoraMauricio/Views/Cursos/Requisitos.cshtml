@@ -1,0 +1,94 @@
+﻿@model ProyectoFinalAlvaradoMoraMauricio.ViewModels.CursoRequisitoViewModel
+
+@{
+    ViewData["Title"] = "Requisitos y correquisitos";
+    var requisitosActuales = ViewBag.RequisitosActuales as List<ProyectoFinalAlvaradoMoraMauricio.Models.CursoRequisito>;
+}
+
+<h2>Gestión de requisitos y correquisitos</h2>
+
+<div class="alert alert-info">
+    <strong>Curso base:</strong>
+    @ViewBag.CursoBaseCodigo - @ViewBag.CursoBaseNombre
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">Agregar requisito o correquisito</div>
+    <div class="card-body">
+        <form asp-action="Requisitos" method="post">
+            <input type="hidden" asp-for="CursoId" />
+
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="mb-3">
+                <label class="form-label">Curso al que se asignará la relación</label>
+                <input class="form-control" value="@ViewBag.CursoBaseCodigo - @ViewBag.CursoBaseNombre" readonly />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="CursoRequisitoIdFk" class="form-label"></label>
+                <select asp-for="CursoRequisitoIdFk" class="form-control" asp-items="ViewBag.CursoRequisitoIdFk">
+                    <option value="">Seleccione un curso</option>
+                </select>
+                <span asp-validation-for="CursoRequisitoIdFk" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="TipoRequisito" class="form-label"></label>
+                <select asp-for="TipoRequisito" class="form-control">
+                    <option value="Requisito">Requisito</option>
+                    <option value="Correquisito">Correquisito</option>
+                </select>
+                <span asp-validation-for="TipoRequisito" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Agregar</button>
+            <a asp-action="Index" class="btn btn-secondary">Volver a cursos</a>
+        </form>
+    </div>
+</div>
+
+<h4>Relaciones actuales del curso</h4>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Curso base</th>
+            <th>Curso relacionado</th>
+            <th>Tipo</th>
+            <th style="width:140px;">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (requisitosActuales != null && requisitosActuales.Any())
+        {
+            @foreach (var item in requisitosActuales)
+            {
+                <tr>
+                    <td>@ViewBag.CursoBaseCodigo - @ViewBag.CursoBaseNombre</td>
+                    <td>@item.CursoRequisitoNavigation.Codigo - @item.CursoRequisitoNavigation.Nombre</td>
+                    <td>@item.TipoRequisito</td>
+                    <td>
+                        <form asp-action="EliminarRequisito" method="post" class="d-inline">
+                            <input type="hidden" name="cursoRequisitoId" value="@item.CursoRequisitoId" />
+                            <input type="hidden" name="cursoId" value="@item.CursoId" />
+                            <button type="submit" class="btn btn-danger btn-sm">Quitar</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="4">Este curso no tiene requisitos ni correquisitos registrados.</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

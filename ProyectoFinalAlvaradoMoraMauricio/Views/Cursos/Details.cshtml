@@ -4,29 +4,24 @@
     ViewData["Title"] = "Detalle de curso";
 }
 
-<h1>Detalle de curso</h1>
+<h2>Detalle de curso</h2>
 
-<div>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-2">Código</dt>
-        <dd class="col-sm-10">@Model.Codigo</dd>
+<dl class="row">
+    <dt class="col-sm-3">Código</dt>
+    <dd class="col-sm-9">@Model.Codigo</dd>
 
-        <dt class="col-sm-2">Nombre</dt>
-        <dd class="col-sm-10">@Model.Nombre</dd>
+    <dt class="col-sm-3">Nombre</dt>
+    <dd class="col-sm-9">@Model.Nombre</dd>
 
-        <dt class="col-sm-2">Créditos</dt>
-        <dd class="col-sm-10">@Model.Creditos</dd>
+    <dt class="col-sm-3">Descripción</dt>
+    <dd class="col-sm-9">@Model.Descripcion</dd>
 
-        <dt class="col-sm-2">Carrera</dt>
-        <dd class="col-sm-10">@Model.Carrera?.Nombre</dd>
-    </dl>
-</div>
+    <dt class="col-sm-3">Créditos</dt>
+    <dd class="col-sm-9">@Model.Creditos</dd>
 
-<div>
-    @if (User.IsInRole("Admin"))
-    {
-        <a asp-action="Edit" asp-route-id="@Model.CursoId" class="btn btn-warning">Editar</a>
-    }
-    <a asp-action="Index" class="btn btn-secondary">Volver</a>
-</div>
+    <dt class="col-sm-3">Activo</dt>
+    <dd class="col-sm-9">@(Model.Activo ? "Sí" : "No")</dd>
+</dl>
+
+<a asp-action="Edit" asp-route-id="@Model.CursoId" class="btn btn-warning">Editar</a>
+<a asp-action="Index" class="btn btn-secondary">Volver</a>

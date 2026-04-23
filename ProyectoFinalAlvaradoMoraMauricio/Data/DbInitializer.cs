@@ -10,7 +10,7 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Data
             var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
             var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
-            string[] roles = { "Admin", "Estudiante" };
+            string[] roles = { "Administrador", "Estudiante", "Docente", "Registro" };
 
             foreach (var role in roles)
             {
@@ -31,15 +31,27 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Data
                 {
                     UserName = adminEmail,
                     Email = adminEmail,
-                    NombreCompleto = "Administrador General",
+                    Cedula = "000000000",
+                    Nombre = "Administrador",
+                    Apellidos = "General",
+                    Direccion = "Sistema",
+                    Activo = true,
+                    FechaIngreso = DateTime.Now,
                     EmailConfirmed = true
                 };
 
-                var result = await userManager.CreateAsync(adminUser, adminPassword);
+                var createResult = await userManager.CreateAsync(adminUser, adminPassword);
 
-                if (result.Succeeded)
+                if (createResult.Succeeded)
                 {
-                    await userManager.AddToRoleAsync(adminUser, "Admin");
+                    await userManager.AddToRoleAsync(adminUser, "Administrador");
+                }
+            }
+            else
+            {
+                if (!await userManager.IsInRoleAsync(adminUser, "Administrador"))
+                {
+                    await userManager.AddToRoleAsync(adminUser, "Administrador");
                 }
             }
         }

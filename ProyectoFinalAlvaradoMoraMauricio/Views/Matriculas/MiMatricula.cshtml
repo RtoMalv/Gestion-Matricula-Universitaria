@@ -1,0 +1,73 @@
+﻿@model ProyectoFinalAlvaradoMoraMauricio.ViewModels.MatriculaViewModel
+
+@{
+    ViewData["Title"] = "Mi matrícula";
+}
+
+<h2>Mi matrícula</h2>
+
+@if (Model.MatriculaId == 0)
+{
+    <div class="alert alert-info">
+        No tiene una matrícula en borrador o confirmada para mostrar.
+    </div>
+
+    <a asp-action="Oferta" class="btn btn-primary">Ir a oferta académica</a>
+}
+else
+{
+    <div class="mb-3">
+        <p><strong>Período:</strong> @Model.PeriodoNombre</p>
+        <p><strong>Estado:</strong> @Model.Estado</p>
+        <p><strong>Fecha de creación:</strong> @Model.FechaCreacion</p>
+        @if (Model.FechaConfirmada.HasValue)
+        {
+            <p><strong>Fecha confirmada:</strong> @Model.FechaConfirmada</p>
+        }
+    </div>
+
+    <a asp-action="Oferta" class="btn btn-primary mb-3">Agregar más cursos</a>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Curso</th>
+                <th>Grupo</th>
+                <th>Docente</th>
+                <th>Modalidad</th>
+                <th>Horario</th>
+                <th style="width:120px;">Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.CursosMatriculados)
+            {
+                <tr>
+                    <td>@item.CursoCodigo - @item.CursoNombre</td>
+                    <td>@item.NumeroGrupo</td>
+                    <td>@item.DocenteNombre</td>
+                    <td>@item.Modalidad</td>
+                    <td>@item.DiaSemana @item.HorarioTexto</td>
+                    <td>
+                        @if (Model.Estado == "Borrador")
+                        {
+                            <form asp-action="QuitarGrupo" method="post">
+                                <input type="hidden" name="matriculaId" value="@Model.MatriculaId" />
+                                <input type="hidden" name="grupoId" value="@item.GrupoId" />
+                                <button type="submit" class="btn btn-danger btn-sm">Quitar</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (Model.Estado == "Borrador" && Model.CursosMatriculados.Any())
+    {
+        <form asp-action="Confirmar" method="post">
+            <input type="hidden" name="matriculaId" value="@Model.MatriculaId" />
+            <button type="submit" class="btn btn-success">Confirmar matrícula</button>
+        </form>
+    }
+}

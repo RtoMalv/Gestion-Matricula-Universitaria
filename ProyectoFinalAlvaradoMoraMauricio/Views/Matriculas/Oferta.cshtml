@@ -1,0 +1,83 @@
+﻿@model ProyectoFinalAlvaradoMoraMauricio.ViewModels.FiltroCursoViewModel
+
+@{
+    ViewData["Title"] = "Oferta académica";
+}
+
+<h2>Oferta académica</h2>
+
+<form asp-action="Oferta" method="get" class="mb-4">
+    <div class="row">
+        <div class="col-md-3 mb-3">
+            <label class="form-label">Período</label>
+            <select asp-for="PeriodoAcademicoId" class="form-control" asp-items="Model.Periodos">
+                <option value="">Todos</option>
+            </select>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <label class="form-label">Curso</label>
+            <input asp-for="Search" class="form-control" placeholder="Código o nombre" />
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <label class="form-label">Docente</label>
+            <select asp-for="DocentePerfilId" class="form-control" asp-items="Model.Docentes">
+                <option value="">Todos</option>
+            </select>
+        </div>
+
+        <div class="col-md-3 mb-3">
+            <label class="form-label">Modalidad</label>
+            <select asp-for="Modalidad" class="form-control" asp-items="Model.Modalidades">
+                <option value="">Todas</option>
+            </select>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Filtrar</button>
+</form>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Curso</th>
+            <th>Grupo</th>
+            <th>Período</th>
+            <th>Docente</th>
+            <th>Modalidad</th>
+            <th>Aula</th>
+            <th>Horario</th>
+            <th style="width:120px;">Acción</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Resultados.Any())
+        {
+            @foreach (var item in Model.Resultados)
+            {
+                <tr>
+                    <td>@item.CursoCodigo - @item.CursoNombre</td>
+                    <td>@item.NumeroGrupo</td>
+                    <td>@item.PeriodoNombre</td>
+                    <td>@item.DocenteNombre</td>
+                    <td>@item.Modalidad</td>
+                    <td>@item.Aula</td>
+                    <td>@item.DiaSemana @item.HorarioTexto</td>
+                    <td>
+                        <form asp-action="AgregarGrupo" method="post">
+                            <input type="hidden" name="grupoId" value="@item.GrupoId" />
+                            <button type="submit" class="btn btn-success btn-sm">Agregar</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="8">No hay grupos disponibles con los filtros aplicados.</td>
+            </tr>
+        }
+    </tbody>
+</table>

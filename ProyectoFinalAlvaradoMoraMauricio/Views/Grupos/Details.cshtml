@@ -1,0 +1,45 @@
+﻿@model ProyectoFinalAlvaradoMoraMauricio.Models.Grupo
+
+@{
+    ViewData["Title"] = "Detalle de grupo";
+    var horario = Model.Horarios.FirstOrDefault();
+}
+
+<h2>Detalle de grupo</h2>
+
+<dl class="row">
+    <dt class="col-sm-3">Curso</dt>
+    <dd class="col-sm-9">@Model.Curso.NombreMostrar</dd>
+
+    <dt class="col-sm-3">Grupo</dt>
+    <dd class="col-sm-9">@Model.NumeroGrupo</dd>
+
+    <dt class="col-sm-3">Período</dt>
+    <dd class="col-sm-9">@Model.PeriodoAcademico.NombrePeriodo</dd>
+
+    <dt class="col-sm-3">Docente</dt>
+    <dd class="col-sm-9">@(Model.DocentePerfil?.User?.NombreCompleto ?? "Sin asignar")</dd>
+
+    <dt class="col-sm-3">Modalidad</dt>
+    <dd class="col-sm-9">@Model.Modalidad</dd>
+
+    <dt class="col-sm-3">Estado</dt>
+    <dd class="col-sm-9">@Model.Estado</dd>
+
+    <dt class="col-sm-3">Aula</dt>
+    <dd class="col-sm-9">@Model.Aula</dd>
+
+    <dt class="col-sm-3">Cupo máximo</dt>
+    <dd class="col-sm-9">@Model.CupoMaximo</dd>
+
+    <dt class="col-sm-3">Horario</dt>
+    <dd class="col-sm-9">
+        @if (horario != null)
+        {
+            @($"{horario.DiaSemana} {horario.HoraInicio:hh\\:mm} - {horario.HoraFinal:hh\\:mm}")
+        }
+    </dd>
+</dl>
+
+<a asp-action="Edit" asp-route-id="@Model.GrupoId" class="btn btn-warning">Editar</a>
+<a asp-action="Index" class="btn btn-secondary">Volver</a>

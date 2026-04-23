@@ -1,5 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
+﻿using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ProyectoFinalAlvaradoMoraMauricio.Models
 {
@@ -7,28 +6,45 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Models
     {
         public int EstudianteId { get; set; }
 
-        [Required(ErrorMessage = "El nombre del estudiante es obligatorio.")]
-        [StringLength(100, ErrorMessage = "El nombre no puede superar los 100 caracteres.")]
-        public string Nombre { get; set; } = string.Empty;
+        public string UserId { get; set; } = string.Empty;
+        public ApplicationUser User { get; set; } = null!;
 
-        [Phone(ErrorMessage = "Debe ingresar un número de teléfono válido.")]
-        public string? Telefono { get; set; }
-
-        [StringLength(200, ErrorMessage = "La dirección no puede superar los 200 caracteres.")]
-        public string? Direccion { get; set; }
-
-        [EmailAddress(ErrorMessage = "Debe ingresar un correo válido.")]
-        public string? Correo { get; set; }
-
-        [Display(Name = "Carrera")]
         public int CarreraId { get; set; }
+        public Carrera Carrera { get; set; } = null!;
 
-        [ForeignKey("CarreraId")]
-        public Carrera? Carrera { get; set; }
+        public string Carnet { get; set; } = string.Empty;
 
-        public string? UserId { get; set; }
-        public ApplicationUser? User { get; set; }
+        public bool Activo { get; set; } = true;
 
-        public ICollection<Matricula>? Matriculas { get; set; }
+        public ICollection<Matricula> Matriculas { get; set; } = new List<Matricula>();
+
+        // Compatibilidad temporal con vistas/controladores anteriores
+        [NotMapped]
+        public string Nombre
+        {
+            get => User != null ? User.NombreCompleto : string.Empty;
+            set { }
+        }
+
+        [NotMapped]
+        public string Correo
+        {
+            get => User != null ? User.Email ?? string.Empty : string.Empty;
+            set { }
+        }
+
+        [NotMapped]
+        public string Telefono
+        {
+            get => User != null ? User.PhoneNumber ?? string.Empty : string.Empty;
+            set { }
+        }
+
+        [NotMapped]
+        public string Direccion
+        {
+            get => User != null ? User.Direccion ?? string.Empty : string.Empty;
+            set { }
+        }
     }
 }

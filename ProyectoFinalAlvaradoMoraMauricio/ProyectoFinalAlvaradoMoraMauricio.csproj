@@ -8,6 +8,9 @@
 
 	<ItemGroup>
 		<Folder Include="Areas\Identity\" />
+		<Folder Include="Migrations\" />
+		<Folder Include="Repository\Interfaces\" />
+		<Folder Include="Services\Interfaces\" />
 	</ItemGroup>
 
 	<ItemGroup>

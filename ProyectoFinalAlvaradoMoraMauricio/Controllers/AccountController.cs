@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
 using ProyectoFinalAlvaradoMoraMauricio.Data;
 using ProyectoFinalAlvaradoMoraMauricio.Models;
 using ProyectoFinalAlvaradoMoraMauricio.ViewModels;
@@ -23,79 +24,120 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Controllers
             _context = context;
         }
 
-        // GET: Account/Register
         [HttpGet]
         public IActionResult Register()
         {
-            ViewData["CarreraId"] = new SelectList(_context.Carreras.OrderBy(c => c.Nombre), "CarreraId", "Nombre");
+            ViewData["CarreraId"] = new SelectList(
+                _context.Carreras.Where(c => c.Activa).OrderBy(c => c.Nombre),
+                "CarreraId",
+                "Nombre");
+
             return View();
         }
 
-        // POST: Account/Register
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
             if (ModelState.IsValid)
             {
-                var usuario = new ApplicationUser
+                var existeCorreo = await _userManager.FindByEmailAsync(model.Email);
+                if (existeCorreo != null)
                 {
-                    UserName = model.Email,
-                    Email = model.Email,
-                    NombreCompleto = model.NombreCompleto,
-                    EmailConfirmed = true
-                };
-
-                var resultado = await _userManager.CreateAsync(usuario, model.Password);
-
-                if (resultado.Succeeded)
-                {
-                    await _userManager.AddToRoleAsync(usuario, "Estudiante");
-
-                    var estudiante = new Estudiante
-                    {
-                        Nombre = model.NombreCompleto,
-                        Telefono = model.Telefono,
-                        Direccion = model.Direccion,
-                        Correo = model.Email,
-                        CarreraId = model.CarreraId,
-                        UserId = usuario.Id
-                    };
-
-                    _context.Estudiantes.Add(estudiante);
-                    await _context.SaveChangesAsync();
-
-                    await _signInManager.SignInAsync(usuario, isPersistent: false);
-
-                    return RedirectToAction("Index", "Home");
+                    ModelState.AddModelError(string.Empty, "Ya existe una cuenta registrada con ese correo.");
                 }
 
-                foreach (var error in resultado.Errors)
+                var existeCedula = await _context.Users.AnyAsync(u => u.Cedula == model.Cedula);
+                if (existeCedula)
                 {
-                    ModelState.AddModelError(string.Empty, error.Description);
+                    ModelState.AddModelError(string.Empty, "Ya existe una cuenta registrada con esa cédula.");
+                }
+
+                var existeCarnet = await _context.Estudiantes.AnyAsync(e => e.Carnet == model.Carnet);
+                if (existeCarnet)
+                {
+                    ModelState.AddModelError(string.Empty, "Ya existe un estudiante registrado con ese carnet.");
+                }
+
+                if (ModelState.ErrorCount == 0)
+                {
+                    var usuario = new ApplicationUser
+                    {
+                        UserName = model.Email,
+                        Email = model.Email,
+                        Cedula = model.Cedula,
+                        Nombre = model.Nombre,
+                        Apellidos = model.Apellidos,
+                        Direccion = model.Direccion,
+                        PhoneNumber = model.Telefono,
+                        Activo = true,
+                        FechaIngreso = DateTime.Now,
+                        EmailConfirmed = true
+                    };
+
+                    var resultado = await _userManager.CreateAsync(usuario, model.Password);
+
+                    if (resultado.Succeeded)
+                    {
+                        await _userManager.AddToRoleAsync(usuario, "Estudiante");
+
+                        var estudiante = new Estudiante
+                        {
+                            UserId = usuario.Id,
+                            CarreraId = model.CarreraId,
+                            Carnet = model.Carnet,
+                            Activo = true
+                        };
+
+                        _context.Estudiantes.Add(estudiante);
+                        await _context.SaveChangesAsync();
+
+                        await _signInManager.SignInAsync(usuario, isPersistent: false);
+
+                        return RedirectToAction("Index", "Home");
+                    }
+
+                    foreach (var error in resultado.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
                 }
             }
 
-            ViewData["CarreraId"] = new SelectList(_context.Carreras.OrderBy(c => c.Nombre), "CarreraId", "Nombre", model.CarreraId);
+            ViewData["CarreraId"] = new SelectList(
+                _context.Carreras.Where(c => c.Activa).OrderBy(c => c.Nombre),
+                "CarreraId",
+                "Nombre",
+                model.CarreraId);
+
             return View(model);
         }
 
-        // GET: Account/Login
         [HttpGet]
-        public IActionResult Login()
+        public IActionResult Login(string? returnUrl = null)
         {
+            ViewData["ReturnUrl"] = returnUrl;
             return View();
         }
 
-        // POST: Account/Login
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
         {
+            ViewData["ReturnUrl"] = returnUrl;
+
             if (ModelState.IsValid)
             {
+                var usuario = await _userManager.FindByEmailAsync(model.Email);
+
+                if (usuario == null || !usuario.Activo)
+                {
+                    ModelState.AddModelError(string.Empty, "No existe una cuenta activa con ese correo.");
+                    return View(model);
+                }
+
                 var resultado = await _signInManager.PasswordSignInAsync(
-                    model.Email,
+                    usuario.UserName!,
                     model.Password,
                     model.RememberMe,
                     lockoutOnFailure: false);
@@ -110,13 +152,12 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Controllers
                     return RedirectToAction("Index", "Home");
                 }
 
-                ModelState.AddModelError(string.Empty, "Intento de inicio de sesión no válido.");
+                ModelState.AddModelError(string.Empty, "Las credenciales ingresadas no son válidas.");
             }
 
             return View(model);
         }
 
-        // POST: Account/Logout
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
@@ -125,7 +166,6 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Controllers
             return RedirectToAction("Index", "Home");
         }
 
-        // GET: Account/AccessDenied
         [HttpGet]
         public IActionResult AccessDenied()
         {

@@ -1,0 +1,46 @@
+﻿@model IEnumerable<ProyectoFinalAlvaradoMoraMauricio.Models.DocentePerfil>
+
+@{
+    ViewData["Title"] = "Docentes";
+}
+
+<h2>Docentes</h2>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <form asp-action="Index" method="get" class="d-flex">
+        <input type="text" name="search" value="@ViewData["Search"]" class="form-control me-2" placeholder="Buscar docente" />
+        <button type="submit" class="btn btn-outline-primary">Buscar</button>
+    </form>
+
+    <a asp-action="Create" class="btn btn-primary">Nuevo docente</a>
+</div>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Cédula</th>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Especialidad</th>
+            <th>Activo</th>
+            <th style="width:220px;">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var docente in Model)
+        {
+            <tr>
+                <td>@docente.User.Cedula</td>
+                <td>@docente.User.NombreCompleto</td>
+                <td>@docente.User.Email</td>
+                <td>@docente.Especialidad</td>
+                <td>@(docente.Activo ? "Sí" : "No")</td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@docente.DocentePerfilId" class="btn btn-info btn-sm">Detalle</a>
+                    <a asp-action="Edit" asp-route-id="@docente.DocentePerfilId" class="btn btn-warning btn-sm">Editar</a>
+                    <a asp-action="Delete" asp-route-id="@docente.DocentePerfilId" class="btn btn-danger btn-sm">Eliminar</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

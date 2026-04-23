@@ -12,7 +12,7 @@ using ProyectoFinalAlvaradoMoraMauricio.Data;
 namespace ProyectoFinalAlvaradoMoraMauricio.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260316044700_InitialCreate")]
+    [Migration("20260422212703_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -20,7 +20,7 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.0")
+                .HasAnnotation("ProductVersion", "10.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -166,9 +166,26 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("int");
 
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Apellidos")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<string>("Cedula")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Direccion")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -177,15 +194,19 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<DateTime>("FechaIngreso")
+                        .HasColumnType("datetime2");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
                     b.Property<DateTimeOffset?>("LockoutEnd")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<string>("NombreCompleto")
+                    b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
 
                     b.Property<string>("NormalizedEmail")
                         .HasMaxLength(256)
@@ -238,9 +259,17 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Migrations
                     b.Property<bool>("Activa")
                         .HasColumnType("bit");
 
+                    b.Property<string>("Codigo")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<string>("Descripcion")
-                        .HasMaxLength(250)
-                        .HasColumnType("nvarchar(250)");
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -249,7 +278,31 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Migrations
 
                     b.HasKey("CarreraId");
 
+                    b.HasIndex("Codigo")
+                        .IsUnique();
+
                     b.ToTable("Carreras");
+                });
+
+            modelBuilder.Entity("ProyectoFinalAlvaradoMoraMauricio.Models.CarreraCurso", b =>
+                {
+                    b.Property<int>("CarreraId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CursoId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CuatrimestreSugerido")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Nivel")
+                        .HasColumnType("int");
+
+                    b.HasKey("CarreraId", "CursoId");
+
+                    b.HasIndex("CursoId");
+
+                    b.ToTable("CarreraCursos");
                 });
 
             modelBuilder.Entity("ProyectoFinalAlvaradoMoraMauricio.Models.Curso", b =>
@@ -260,8 +313,8 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CursoId"));
 
-                    b.Property<int>("CarreraId")
-                        .HasColumnType("int");
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Codigo")
                         .IsRequired()
@@ -271,42 +324,76 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Migrations
                     b.Property<int>("Creditos")
                         .HasColumnType("int");
 
+                    b.Property<string>("Descripcion")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
                     b.Property<string>("Nombre")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
 
                     b.HasKey("CursoId");
 
-                    b.HasIndex("CarreraId");
+                    b.HasIndex("Codigo")
+                        .IsUnique();
 
                     b.ToTable("Cursos");
                 });
 
-            modelBuilder.Entity("ProyectoFinalAlvaradoMoraMauricio.Models.Docente", b =>
+            modelBuilder.Entity("ProyectoFinalAlvaradoMoraMauricio.Models.CursoRequisito", b =>
                 {
-                    b.Property<int>("DocenteId")
+                    b.Property<int>("CursoRequisitoId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int");
 
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DocenteId"));
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CursoRequisitoId"));
 
-                    b.Property<string>("Correo")
+                    b.Property<int>("CursoId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CursoRequisitoIdFk")
+                        .HasColumnType("int");
+
+                    b.Property<string>("TipoRequisito")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("CursoRequisitoId");
+
+                    b.HasIndex("CursoId");
+
+                    b.HasIndex("CursoRequisitoIdFk");
+
+                    b.ToTable("CursoRequisitos");
+                });
+
+            modelBuilder.Entity("ProyectoFinalAlvaradoMoraMauricio.Models.DocentePerfil", b =>
+                {
+                    b.Property<int>("DocentePerfilId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DocentePerfilId"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Especialidad")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
-                    b.Property<string>("Nombre")
+                    b.Property<string>("UserId")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                        .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("DocenteId");
+                    b.HasKey("DocentePerfilId");
 
-                    b.ToTable("Docentes");
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("DocentesPerfil");
                 });
 
             modelBuilder.Entity("ProyectoFinalAlvaradoMoraMauricio.Models.Estudiante", b =>
@@ -317,34 +404,111 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("EstudianteId"));
 
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Carnet")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<int>("CarreraId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Correo")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Direccion")
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Nombre")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("Telefono")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("UserId")
+                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("EstudianteId");
 
+                    b.HasIndex("Carnet")
+                        .IsUnique();
+
                     b.HasIndex("CarreraId");
 
-                    b.HasIndex("UserId");
+                    b.HasIndex("UserId")
+                        .IsUnique();
 
                     b.ToTable("Estudiantes");
+                });
+
+            modelBuilder.Entity("ProyectoFinalAlvaradoMoraMauricio.Models.Grupo", b =>
+                {
+                    b.Property<int>("GrupoId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("GrupoId"));
+
+                    b.Property<string>("Aula")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("CupoMaximo")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CursoId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("DocentePerfilId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("Modalidad")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("NumeroGrupo")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<int>("PeriodoAcademicoId")
+                        .HasColumnType("int");
+
+                    b.HasKey("GrupoId");
+
+                    b.HasIndex("DocentePerfilId");
+
+                    b.HasIndex("PeriodoAcademicoId");
+
+                    b.HasIndex("CursoId", "PeriodoAcademicoId", "NumeroGrupo")
+                        .IsUnique();
+
+                    b.ToTable("Grupos");
+                });
+
+            modelBuilder.Entity("ProyectoFinalAlvaradoMoraMauricio.Models.HorarioGrupo", b =>
+                {
+                    b.Property<int>("HorarioGrupoId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("HorarioGrupoId"));
+
+                    b.Property<string>("DiaSemana")
+                        .IsRequired()
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
+
+                    b.Property<int>("GrupoId")
+                        .HasColumnType("int");
+
+                    b.Property<TimeSpan>("HoraFinal")
+                        .HasColumnType("time");
+
+                    b.Property<TimeSpan>("HoraInicio")
+                        .HasColumnType("time");
+
+                    b.HasKey("HorarioGrupoId");
+
+                    b.HasIndex("GrupoId");
+
+                    b.ToTable("HorariosGrupo");
                 });
 
             modelBuilder.Entity("ProyectoFinalAlvaradoMoraMauricio.Models.Matricula", b =>
@@ -355,27 +519,85 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MatriculaId"));
 
-                    b.Property<int>("CursoId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Estado")
                         .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<int>("EstudianteId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime>("FechaMatricula")
+                    b.Property<DateTime?>("FechaConfirmada")
                         .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("PeriodoAcademicoId")
+                        .HasColumnType("int");
 
                     b.HasKey("MatriculaId");
 
-                    b.HasIndex("CursoId");
+                    b.HasIndex("PeriodoAcademicoId");
 
-                    b.HasIndex("EstudianteId");
+                    b.HasIndex("EstudianteId", "PeriodoAcademicoId")
+                        .IsUnique();
 
                     b.ToTable("Matriculas");
+                });
+
+            modelBuilder.Entity("ProyectoFinalAlvaradoMoraMauricio.Models.MatriculaDetalle", b =>
+                {
+                    b.Property<int>("MatriculaDetalleId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MatriculaDetalleId"));
+
+                    b.Property<DateTime>("FechaAgregado")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("GrupoId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MatriculaId")
+                        .HasColumnType("int");
+
+                    b.HasKey("MatriculaDetalleId");
+
+                    b.HasIndex("GrupoId");
+
+                    b.HasIndex("MatriculaId", "GrupoId")
+                        .IsUnique();
+
+                    b.ToTable("MatriculaDetalles");
+                });
+
+            modelBuilder.Entity("ProyectoFinalAlvaradoMoraMauricio.Models.PeriodoAcademico", b =>
+                {
+                    b.Property<int>("PeriodoAcademicoId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PeriodoAcademicoId"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime>("FechaFinal")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaInicio")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("NombrePeriodo")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.HasKey("PeriodoAcademicoId");
+
+                    b.ToTable("PeriodosAcademicos");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -429,15 +651,53 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("ProyectoFinalAlvaradoMoraMauricio.Models.Curso", b =>
+            modelBuilder.Entity("ProyectoFinalAlvaradoMoraMauricio.Models.CarreraCurso", b =>
                 {
                     b.HasOne("ProyectoFinalAlvaradoMoraMauricio.Models.Carrera", "Carrera")
-                        .WithMany("Cursos")
+                        .WithMany("CarreraCursos")
                         .HasForeignKey("CarreraId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("ProyectoFinalAlvaradoMoraMauricio.Models.Curso", "Curso")
+                        .WithMany("CarreraCursos")
+                        .HasForeignKey("CursoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
                     b.Navigation("Carrera");
+
+                    b.Navigation("Curso");
+                });
+
+            modelBuilder.Entity("ProyectoFinalAlvaradoMoraMauricio.Models.CursoRequisito", b =>
+                {
+                    b.HasOne("ProyectoFinalAlvaradoMoraMauricio.Models.Curso", "Curso")
+                        .WithMany("RequisitosDelCurso")
+                        .HasForeignKey("CursoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ProyectoFinalAlvaradoMoraMauricio.Models.Curso", "CursoRequisitoNavigation")
+                        .WithMany("EsRequisitoDe")
+                        .HasForeignKey("CursoRequisitoIdFk")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Curso");
+
+                    b.Navigation("CursoRequisitoNavigation");
+                });
+
+            modelBuilder.Entity("ProyectoFinalAlvaradoMoraMauricio.Models.DocentePerfil", b =>
+                {
+                    b.HasOne("ProyectoFinalAlvaradoMoraMauricio.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("ProyectoFinalAlvaradoMoraMauricio.Models.Estudiante", b =>
@@ -450,46 +710,134 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Migrations
 
                     b.HasOne("ProyectoFinalAlvaradoMoraMauricio.Models.ApplicationUser", "User")
                         .WithMany()
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Carrera");
 
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("ProyectoFinalAlvaradoMoraMauricio.Models.Matricula", b =>
+            modelBuilder.Entity("ProyectoFinalAlvaradoMoraMauricio.Models.Grupo", b =>
                 {
                     b.HasOne("ProyectoFinalAlvaradoMoraMauricio.Models.Curso", "Curso")
-                        .WithMany("Matriculas")
+                        .WithMany("Grupos")
                         .HasForeignKey("CursoId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("ProyectoFinalAlvaradoMoraMauricio.Models.DocentePerfil", "DocentePerfil")
+                        .WithMany("Grupos")
+                        .HasForeignKey("DocentePerfilId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("ProyectoFinalAlvaradoMoraMauricio.Models.PeriodoAcademico", "PeriodoAcademico")
+                        .WithMany("Grupos")
+                        .HasForeignKey("PeriodoAcademicoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Curso");
+
+                    b.Navigation("DocentePerfil");
+
+                    b.Navigation("PeriodoAcademico");
+                });
+
+            modelBuilder.Entity("ProyectoFinalAlvaradoMoraMauricio.Models.HorarioGrupo", b =>
+                {
+                    b.HasOne("ProyectoFinalAlvaradoMoraMauricio.Models.Grupo", "Grupo")
+                        .WithMany("Horarios")
+                        .HasForeignKey("GrupoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Grupo");
+                });
+
+            modelBuilder.Entity("ProyectoFinalAlvaradoMoraMauricio.Models.Matricula", b =>
+                {
                     b.HasOne("ProyectoFinalAlvaradoMoraMauricio.Models.Estudiante", "Estudiante")
                         .WithMany("Matriculas")
                         .HasForeignKey("EstudianteId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Curso");
+                    b.HasOne("ProyectoFinalAlvaradoMoraMauricio.Models.PeriodoAcademico", "PeriodoAcademico")
+                        .WithMany("Matriculas")
+                        .HasForeignKey("PeriodoAcademicoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Estudiante");
+
+                    b.Navigation("PeriodoAcademico");
+                });
+
+            modelBuilder.Entity("ProyectoFinalAlvaradoMoraMauricio.Models.MatriculaDetalle", b =>
+                {
+                    b.HasOne("ProyectoFinalAlvaradoMoraMauricio.Models.Grupo", "Grupo")
+                        .WithMany("MatriculaDetalles")
+                        .HasForeignKey("GrupoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("ProyectoFinalAlvaradoMoraMauricio.Models.Matricula", "Matricula")
+                        .WithMany("Detalles")
+                        .HasForeignKey("MatriculaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Grupo");
+
+                    b.Navigation("Matricula");
                 });
 
             modelBuilder.Entity("ProyectoFinalAlvaradoMoraMauricio.Models.Carrera", b =>
                 {
-                    b.Navigation("Cursos");
+                    b.Navigation("CarreraCursos");
 
                     b.Navigation("Estudiantes");
                 });
 
             modelBuilder.Entity("ProyectoFinalAlvaradoMoraMauricio.Models.Curso", b =>
                 {
-                    b.Navigation("Matriculas");
+                    b.Navigation("CarreraCursos");
+
+                    b.Navigation("EsRequisitoDe");
+
+                    b.Navigation("Grupos");
+
+                    b.Navigation("RequisitosDelCurso");
+                });
+
+            modelBuilder.Entity("ProyectoFinalAlvaradoMoraMauricio.Models.DocentePerfil", b =>
+                {
+                    b.Navigation("Grupos");
                 });
 
             modelBuilder.Entity("ProyectoFinalAlvaradoMoraMauricio.Models.Estudiante", b =>
                 {
+                    b.Navigation("Matriculas");
+                });
+
+            modelBuilder.Entity("ProyectoFinalAlvaradoMoraMauricio.Models.Grupo", b =>
+                {
+                    b.Navigation("Horarios");
+
+                    b.Navigation("MatriculaDetalles");
+                });
+
+            modelBuilder.Entity("ProyectoFinalAlvaradoMoraMauricio.Models.Matricula", b =>
+                {
+                    b.Navigation("Detalles");
+                });
+
+            modelBuilder.Entity("ProyectoFinalAlvaradoMoraMauricio.Models.PeriodoAcademico", b =>
+                {
+                    b.Navigation("Grupos");
+
                     b.Navigation("Matriculas");
                 });
 #pragma warning restore 612, 618

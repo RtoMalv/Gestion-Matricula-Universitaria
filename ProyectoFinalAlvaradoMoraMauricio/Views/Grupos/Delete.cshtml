@@ -1,0 +1,25 @@
+﻿@model ProyectoFinalAlvaradoMoraMauricio.Models.Grupo
+
+@{
+    ViewData["Title"] = "Eliminar grupo";
+}
+
+<h2>Eliminar grupo</h2>
+
+<div class="alert alert-warning">
+    ¿Está seguro de que desea eliminar este grupo?
+</div>
+
+<dl class="row">
+    <dt class="col-sm-3">Curso</dt>
+    <dd class="col-sm-9">@Model.CursoId</dd>
+
+    <dt class="col-sm-3">Grupo</dt>
+    <dd class="col-sm-9">@Model.NumeroGrupo</dd>
+</dl>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="GrupoId" />
+    <button type="submit" class="btn btn-danger">Eliminar</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>

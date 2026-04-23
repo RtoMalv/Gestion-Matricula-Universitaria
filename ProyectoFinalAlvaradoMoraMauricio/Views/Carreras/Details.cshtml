@@ -4,26 +4,24 @@
     ViewData["Title"] = "Detalle de carrera";
 }
 
-<h1>Detalle de carrera</h1>
+<h2>Detalle de carrera</h2>
 
-<div>
-    <hr />
-    <dl class="row">
-        <dt class="col-sm-2">Nombre</dt>
-        <dd class="col-sm-10">@Model.Nombre</dd>
+<dl class="row">
+    <dt class="col-sm-3">Código</dt>
+    <dd class="col-sm-9">@Model.Codigo</dd>
 
-        <dt class="col-sm-2">Descripción</dt>
-        <dd class="col-sm-10">@Model.Descripcion</dd>
+    <dt class="col-sm-3">Nombre</dt>
+    <dd class="col-sm-9">@Model.Nombre</dd>
 
-        <dt class="col-sm-2">Activa</dt>
-        <dd class="col-sm-10">@(Model.Activa ? "Sí" : "No")</dd>
-    </dl>
-</div>
+    <dt class="col-sm-3">Descripción</dt>
+    <dd class="col-sm-9">@Model.Descripcion</dd>
 
-<div>
-    @if (User.IsInRole("Admin"))
-    {
-        <a asp-action="Edit" asp-route-id="@Model.CarreraId" class="btn btn-warning">Editar</a>
-    }
-    <a asp-action="Index" class="btn btn-secondary">Volver</a>
-</div>
+    <dt class="col-sm-3">Activa</dt>
+    <dd class="col-sm-9">@(Model.Activa ? "Sí" : "No")</dd>
+
+    <dt class="col-sm-3">Fecha creación</dt>
+    <dd class="col-sm-9">@Model.FechaCreacion</dd>
+</dl>
+
+<a asp-action="Edit" asp-route-id="@Model.CarreraId" class="btn btn-warning">Editar</a>
+<a asp-action="Index" class="btn btn-secondary">Volver</a>

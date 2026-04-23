@@ -1,0 +1,56 @@
+﻿@model IEnumerable<ProyectoFinalAlvaradoMoraMauricio.Models.Grupo>
+
+@{
+    ViewData["Title"] = "Grupos";
+}
+
+<h2>Grupos</h2>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <form asp-action="Index" method="get" class="d-flex">
+        <input type="text" name="search" value="@ViewData["Search"]" class="form-control me-2" placeholder="Buscar grupo" />
+        <button type="submit" class="btn btn-outline-primary">Buscar</button>
+    </form>
+
+    <a asp-action="Create" class="btn btn-primary">Nuevo grupo</a>
+</div>
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Curso</th>
+            <th>Grupo</th>
+            <th>Período</th>
+            <th>Docente</th>
+            <th>Modalidad</th>
+            <th>Cupo</th>
+            <th>Horario</th>
+            <th style="width:220px;">Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var grupo in Model)
+        {
+            var horario = grupo.Horarios.FirstOrDefault();
+            <tr>
+                <td>@grupo.Curso.NombreMostrar</td>
+                <td>@grupo.NumeroGrupo</td>
+                <td>@grupo.PeriodoAcademico.NombrePeriodo</td>
+                <td>@(grupo.DocentePerfil?.User?.NombreCompleto ?? "Sin asignar")</td>
+                <td>@grupo.Modalidad</td>
+                <td>@grupo.CupoMaximo</td>
+                <td>
+                    @if (horario != null)
+                    {
+                        @($"{horario.DiaSemana} {horario.HoraInicio:hh\\:mm} - {horario.HoraFinal:hh\\:mm}")
+                    }
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@grupo.GrupoId" class="btn btn-info btn-sm">Detalle</a>
+                    <a asp-action="Edit" asp-route-id="@grupo.GrupoId" class="btn btn-warning btn-sm">Editar</a>
+                    <a asp-action="Delete" asp-route-id="@grupo.GrupoId" class="btn btn-danger btn-sm">Eliminar</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
