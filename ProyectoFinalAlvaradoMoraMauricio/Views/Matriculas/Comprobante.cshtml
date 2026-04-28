@@ -1,0 +1,75 @@
+﻿@model ProyectoFinalAlvaradoMoraMauricio.ViewModels.ComprobanteMatriculaViewModel
+
+@{
+    ViewData["Title"] = "Comprobante de matrícula";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Comprobante de matrícula</h2>
+    <button class="btn btn-outline-secondary" onclick="window.print()">Imprimir</button>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        Información general
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <p><strong>Estudiante:</strong> @Model.NombreEstudiante</p>
+                <p><strong>Carnet:</strong> @Model.Carnet</p>
+                <p><strong>Correo:</strong> @Model.Correo</p>
+                <p><strong>Carrera:</strong> @Model.Carrera</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Matrícula #:</strong> @Model.MatriculaId</p>
+                <p><strong>Período:</strong> @Model.PeriodoNombre</p>
+                <p><strong>Estado:</strong> @Model.Estado</p>
+                <p><strong>Fecha de creación:</strong> @Model.FechaCreacion</p>
+                <p><strong>Fecha de confirmación:</strong> @Model.FechaConfirmada</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header">
+        Cursos matriculados
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Curso</th>
+                    <th>Grupo</th>
+                    <th>Docente</th>
+                    <th>Modalidad</th>
+                    <th>Aula</th>
+                    <th>Horario</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Cursos)
+                {
+                    <tr>
+                        <td>@item.CursoCodigo - @item.CursoNombre</td>
+                        <td>@item.NumeroGrupo</td>
+                        <td>@(string.IsNullOrWhiteSpace(item.DocenteNombre) ? "Sin asignar" : item.DocenteNombre)</td>
+                        <td>@item.Modalidad</td>
+                        <td>@item.Aula</td>
+                        <td>@item.DiaSemana @item.HorarioTexto</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="mt-3">
+            <p><strong>Total de cursos:</strong> @Model.TotalCursos</p>
+            <p><strong>Total de créditos:</strong> @Model.TotalCreditos</p>
+        </div>
+    </div>
+</div>
+
+<div>
+    <a asp-action="MiMatricula" class="btn btn-secondary">Volver</a>
+</div>

@@ -32,9 +32,21 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Controllers
                 .OrderBy(d => d.User.Nombre)
                 .ToListAsync();
 
-            filtro.Periodos = new SelectList(periodos, "PeriodoAcademicoId", "NombrePeriodo", filtro.PeriodoAcademicoId);
-            filtro.Docentes = new SelectList(docentes, "DocentePerfilId", "NombreMostrar", filtro.DocentePerfilId);
-            filtro.Modalidades = new SelectList(new List<string> { "Presencial", "Virtual", "Híbrida" }, filtro.Modalidad);
+            filtro.Periodos = new SelectList(
+                periodos,
+                "PeriodoAcademicoId",
+                "NombrePeriodo",
+                filtro.PeriodoAcademicoId);
+
+            filtro.Docentes = new SelectList(
+                docentes,
+                "DocentePerfilId",
+                "NombreMostrar",
+                filtro.DocentePerfilId);
+
+            filtro.Modalidades = new SelectList(
+                new List<string> { "Presencial", "Virtual", "Híbrida" },
+                filtro.Modalidad);
 
             var query = _context.Grupos
                 .Include(g => g.Curso)
@@ -88,7 +100,9 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Controllers
                     Aula = g.Aula,
                     CupoMaximo = g.CupoMaximo,
                     DiaSemana = horario?.DiaSemana,
-                    HorarioTexto = horario != null ? $"{horario.HoraInicio:hh\\:mm} - {horario.HoraFinal:hh\\:mm}" : null
+                    HorarioTexto = horario != null
+                        ? $"{horario.HoraInicio:hh\\:mm} - {horario.HoraFinal:hh\\:mm}"
+                        : null
                 };
             }).ToList();
 
@@ -101,28 +115,50 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Controllers
         public async Task<IActionResult> AgregarGrupo(int grupoId)
         {
             var userEmail = User.Identity?.Name;
-            if (string.IsNullOrWhiteSpace(userEmail)) return Challenge();
+            if (string.IsNullOrWhiteSpace(userEmail))
+                return Challenge();
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
-            if (user == null) return Challenge();
+            if (user == null)
+                return Challenge();
 
             var estudiante = await _context.Estudiantes
                 .FirstOrDefaultAsync(e => e.UserId == user.Id);
 
-            if (estudiante == null) return NotFound("No se encontró el perfil del estudiante.");
+            if (estudiante == null)
+            {
+                TempData["Error"] = "No se encontró el perfil del estudiante.";
+                return RedirectToAction(nameof(Oferta));
+            }
 
             var grupo = await _context.Grupos
                 .Include(g => g.PeriodoAcademico)
+                .Include(g => g.Curso)
+                .Include(g => g.Horarios)
                 .FirstOrDefaultAsync(g => g.GrupoId == grupoId);
 
-            if (grupo == null) return NotFound();
+            if (grupo == null)
+            {
+                TempData["Error"] = "No se encontró el grupo seleccionado.";
+                return RedirectToAction(nameof(Oferta));
+            }
 
             var matricula = await _context.Matriculas
                 .Include(m => m.Detalles)
+                    .ThenInclude(d => d.Grupo)
+                        .ThenInclude(g => g.Curso)
+                .Include(m => m.Detalles)
+                    .ThenInclude(d => d.Grupo)
+                        .ThenInclude(g => g.Horarios)
                 .FirstOrDefaultAsync(m =>
                     m.EstudianteId == estudiante.EstudianteId &&
-                    m.PeriodoAcademicoId == grupo.PeriodoAcademicoId &&
-                    m.Estado == "Borrador");
+                    m.PeriodoAcademicoId == grupo.PeriodoAcademicoId);
+
+            if (matricula != null && matricula.Estado == "Confirmada")
+            {
+                TempData["Error"] = "La matrícula de este período ya fue confirmada y no puede modificarse.";
+                return RedirectToAction(nameof(MiMatricula), new { matriculaId = matricula.MatriculaId });
+            }
 
             if (matricula == null)
             {
@@ -136,69 +172,142 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Controllers
 
                 _context.Matriculas.Add(matricula);
                 await _context.SaveChangesAsync();
+
+                matricula = await _context.Matriculas
+                    .Include(m => m.Detalles)
+                        .ThenInclude(d => d.Grupo)
+                            .ThenInclude(g => g.Curso)
+                    .Include(m => m.Detalles)
+                        .ThenInclude(d => d.Grupo)
+                            .ThenInclude(g => g.Horarios)
+                    .FirstAsync(m => m.MatriculaId == matricula.MatriculaId);
             }
 
-            var yaExiste = await _context.MatriculaDetalles.AnyAsync(md =>
+            var yaExisteGrupo = await _context.MatriculaDetalles.AnyAsync(md =>
                 md.MatriculaId == matricula.MatriculaId &&
                 md.GrupoId == grupoId);
 
-            if (!yaExiste)
+            if (yaExisteGrupo)
             {
-                _context.MatriculaDetalles.Add(new MatriculaDetalle
-                {
-                    MatriculaId = matricula.MatriculaId,
-                    GrupoId = grupoId,
-                    FechaAgregado = DateTime.Now
-                });
-
-                await _context.SaveChangesAsync();
+                TempData["Info"] = "El grupo seleccionado ya forma parte de su matrícula.";
+                return RedirectToAction(nameof(MiMatricula), new { matriculaId = matricula.MatriculaId });
             }
 
-            return RedirectToAction(nameof(MiMatricula), new { periodoId = grupo.PeriodoAcademicoId });
+            var yaTieneMismoCurso = await _context.MatriculaDetalles
+                .Include(md => md.Grupo)
+                .AnyAsync(md =>
+                    md.MatriculaId == matricula.MatriculaId &&
+                    md.Grupo.CursoId == grupo.CursoId);
+
+            if (yaTieneMismoCurso)
+            {
+                TempData["Error"] = "Ya tiene matriculado otro grupo de ese mismo curso en este período.";
+                return RedirectToAction(nameof(MiMatricula), new { matriculaId = matricula.MatriculaId });
+            }
+
+            var horariosNuevoGrupo = grupo.Horarios.ToList();
+
+            foreach (var detalleExistente in matricula.Detalles)
+            {
+                var grupoExistente = detalleExistente.Grupo;
+                var horariosExistentes = grupoExistente.Horarios.ToList();
+
+                foreach (var nuevo in horariosNuevoGrupo)
+                {
+                    foreach (var existente in horariosExistentes)
+                    {
+                        var mismoDia = nuevo.DiaSemana == existente.DiaSemana;
+                        var hayTraslape = nuevo.HoraInicio < existente.HoraFinal &&
+                                          nuevo.HoraFinal > existente.HoraInicio;
+
+                        if (mismoDia && hayTraslape)
+                        {
+                            TempData["Error"] =
+                                $"Choque de horario detectado con el curso {grupoExistente.Curso.Codigo} - {grupoExistente.Curso.Nombre}, grupo {grupoExistente.NumeroGrupo}.";
+                            return RedirectToAction(nameof(MiMatricula), new { matriculaId = matricula.MatriculaId });
+                        }
+                    }
+                }
+            }
+
+            _context.MatriculaDetalles.Add(new MatriculaDetalle
+            {
+                MatriculaId = matricula.MatriculaId,
+                GrupoId = grupoId,
+                FechaAgregado = DateTime.Now
+            });
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = "El grupo fue agregado correctamente a la matrícula.";
+            return RedirectToAction(nameof(MiMatricula), new { matriculaId = matricula.MatriculaId });
         }
 
         [Authorize(Roles = "Estudiante")]
-        public async Task<IActionResult> MiMatricula(int? periodoId)
+        public async Task<IActionResult> MiMatricula(int? matriculaId, int? periodoId)
         {
             var userEmail = User.Identity?.Name;
-            if (string.IsNullOrWhiteSpace(userEmail)) return Challenge();
+            if (string.IsNullOrWhiteSpace(userEmail))
+                return Challenge();
 
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
-            if (user == null) return Challenge();
+            if (user == null)
+                return Challenge();
 
-            var estudiante = await _context.Estudiantes.FirstOrDefaultAsync(e => e.UserId == user.Id);
-            if (estudiante == null) return NotFound("No se encontró el perfil del estudiante.");
+            var estudiante = await _context.Estudiantes
+                .FirstOrDefaultAsync(e => e.UserId == user.Id);
 
-            var query = _context.Matriculas
+            if (estudiante == null)
+                return NotFound("No se encontró el perfil del estudiante.");
+
+            IQueryable<Matricula> query = _context.Matriculas
                 .Include(m => m.PeriodoAcademico)
-                .Include(m => m.Detalles)
-                    .ThenInclude(d => d.Grupo)
-                        .ThenInclude(g => g.Curso)
-                .Include(m => m.Detalles)
-                    .ThenInclude(d => d.Grupo)
-                        .ThenInclude(g => g.DocentePerfil)
-                            .ThenInclude(d => d!.User)
-                .Include(m => m.Detalles)
-                    .ThenInclude(d => d.Grupo)
-                        .ThenInclude(g => g.Horarios)
-                .Where(m => m.EstudianteId == estudiante.EstudianteId)
-                .AsQueryable();
+                .Where(m => m.EstudianteId == estudiante.EstudianteId);
 
-            if (periodoId.HasValue)
+            Matricula? matricula = null;
+
+            if (matriculaId.HasValue)
             {
-                query = query.Where(m => m.PeriodoAcademicoId == periodoId.Value);
+                matricula = await query
+                    .FirstOrDefaultAsync(m => m.MatriculaId == matriculaId.Value);
+            }
+            else if (periodoId.HasValue)
+            {
+                matricula = await query
+                    .FirstOrDefaultAsync(m => m.PeriodoAcademicoId == periodoId.Value);
             }
             else
             {
-                query = query.OrderByDescending(m => m.FechaCreacion);
-            }
+                matricula = await query
+                    .Where(m => m.Estado == "Borrador")
+                    .OrderByDescending(m => m.FechaCreacion)
+                    .FirstOrDefaultAsync();
 
-            var matricula = await query.FirstOrDefaultAsync();
+                if (matricula == null)
+                {
+                    matricula = await query
+                        .OrderByDescending(m => m.FechaCreacion)
+                        .FirstOrDefaultAsync();
+                }
+            }
 
             if (matricula == null)
             {
                 return View(new MatriculaViewModel());
             }
+
+            var detalles = await _context.MatriculaDetalles
+                .Include(md => md.Grupo)
+                    .ThenInclude(g => g.Curso)
+                .Include(md => md.Grupo)
+                    .ThenInclude(g => g.DocentePerfil)
+                        .ThenInclude(d => d!.User)
+                .Include(md => md.Grupo)
+                    .ThenInclude(g => g.Horarios)
+                .Where(md => md.MatriculaId == matricula.MatriculaId)
+                .OrderBy(md => md.Grupo.Curso.Nombre)
+                .ThenBy(md => md.Grupo.NumeroGrupo)
+                .ToListAsync();
 
             var model = new MatriculaViewModel
             {
@@ -207,9 +316,10 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Controllers
                 PeriodoNombre = matricula.PeriodoAcademico.NombrePeriodo,
                 FechaCreacion = matricula.FechaCreacion,
                 FechaConfirmada = matricula.FechaConfirmada,
-                CursosMatriculados = matricula.Detalles.Select(d =>
+                CursosMatriculados = detalles.Select(d =>
                 {
                     var horario = d.Grupo.Horarios.FirstOrDefault();
+
                     return new OfertaCursoViewModel
                     {
                         GrupoId = d.GrupoId,
@@ -222,7 +332,9 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Controllers
                         Aula = d.Grupo.Aula,
                         CupoMaximo = d.Grupo.CupoMaximo,
                         DiaSemana = horario?.DiaSemana,
-                        HorarioTexto = horario != null ? $"{horario.HoraInicio:hh\\:mm} - {horario.HoraFinal:hh\\:mm}" : null
+                        HorarioTexto = horario != null
+                            ? $"{horario.HoraInicio:hh\\:mm} - {horario.HoraFinal:hh\\:mm}"
+                            : null
                     };
                 }).ToList()
             };
@@ -235,16 +347,32 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> QuitarGrupo(int matriculaId, int grupoId)
         {
+            var matricula = await _context.Matriculas
+                .FirstOrDefaultAsync(m => m.MatriculaId == matriculaId);
+
+            if (matricula == null)
+                return NotFound();
+
+            if (matricula.Estado == "Confirmada")
+            {
+                TempData["Error"] = "No puede quitar cursos de una matrícula ya confirmada.";
+                return RedirectToAction(nameof(MiMatricula), new { matriculaId = matricula.MatriculaId });
+            }
+
             var detalle = await _context.MatriculaDetalles
                 .FirstOrDefaultAsync(md => md.MatriculaId == matriculaId && md.GrupoId == grupoId);
 
-            if (detalle == null) return NotFound();
+            if (detalle == null)
+            {
+                TempData["Error"] = "No se encontró el grupo dentro de la matrícula.";
+                return RedirectToAction(nameof(MiMatricula), new { matriculaId = matricula.MatriculaId });
+            }
 
             _context.MatriculaDetalles.Remove(detalle);
             await _context.SaveChangesAsync();
 
-            var matricula = await _context.Matriculas.FirstOrDefaultAsync(m => m.MatriculaId == matriculaId);
-            return RedirectToAction(nameof(MiMatricula), new { periodoId = matricula?.PeriodoAcademicoId });
+            TempData["Success"] = "El grupo fue retirado de la matrícula.";
+            return RedirectToAction(nameof(MiMatricula), new { matriculaId = matricula.MatriculaId });
         }
 
         [Authorize(Roles = "Estudiante")]
@@ -256,11 +384,19 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Controllers
                 .Include(m => m.Detalles)
                 .FirstOrDefaultAsync(m => m.MatriculaId == matriculaId);
 
-            if (matricula == null) return NotFound();
+            if (matricula == null)
+                return NotFound();
+
+            if (matricula.Estado == "Confirmada")
+            {
+                TempData["Info"] = "La matrícula ya se encontraba confirmada.";
+                return RedirectToAction(nameof(MiMatricula), new { matriculaId = matricula.MatriculaId });
+            }
 
             if (!matricula.Detalles.Any())
             {
-                return RedirectToAction(nameof(MiMatricula), new { periodoId = matricula.PeriodoAcademicoId });
+                TempData["Error"] = "No puede confirmar una matrícula vacía.";
+                return RedirectToAction(nameof(MiMatricula), new { matriculaId = matricula.MatriculaId });
             }
 
             matricula.Estado = "Confirmada";
@@ -268,7 +404,96 @@ namespace ProyectoFinalAlvaradoMoraMauricio.Controllers
 
             await _context.SaveChangesAsync();
 
-            return RedirectToAction(nameof(MiMatricula), new { periodoId = matricula.PeriodoAcademicoId });
+            TempData["Success"] = "La matrícula fue confirmada correctamente.";
+            return RedirectToAction(nameof(MiMatricula), new { matriculaId = matricula.MatriculaId });
+        }
+
+        [Authorize(Roles = "Estudiante")]
+        public async Task<IActionResult> Comprobante(int id)
+        {
+            var userEmail = User.Identity?.Name;
+            if (string.IsNullOrWhiteSpace(userEmail))
+                return Challenge();
+
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == userEmail);
+            if (user == null)
+                return Challenge();
+
+            var estudiante = await _context.Estudiantes
+                .Include(e => e.User)
+                .Include(e => e.Carrera)
+                .FirstOrDefaultAsync(e => e.UserId == user.Id);
+
+            if (estudiante == null)
+                return NotFound("No se encontró el perfil del estudiante.");
+
+            var matricula = await _context.Matriculas
+                .Include(m => m.PeriodoAcademico)
+                .FirstOrDefaultAsync(m =>
+                    m.MatriculaId == id &&
+                    m.EstudianteId == estudiante.EstudianteId);
+
+            if (matricula == null)
+                return NotFound();
+
+            if (matricula.Estado != "Confirmada")
+            {
+                TempData["Error"] = "Solo puede generar el comprobante de una matrícula confirmada.";
+                return RedirectToAction(nameof(MiMatricula), new { matriculaId = matricula.MatriculaId });
+            }
+
+            var detalles = await _context.MatriculaDetalles
+                .Include(md => md.Grupo)
+                    .ThenInclude(g => g.Curso)
+                .Include(md => md.Grupo)
+                    .ThenInclude(g => g.DocentePerfil)
+                        .ThenInclude(d => d!.User)
+                .Include(md => md.Grupo)
+                    .ThenInclude(g => g.Horarios)
+                .Where(md => md.MatriculaId == matricula.MatriculaId)
+                .OrderBy(md => md.Grupo.Curso.Nombre)
+                .ThenBy(md => md.Grupo.NumeroGrupo)
+                .ToListAsync();
+
+            var cursos = detalles.Select(d =>
+            {
+                var horario = d.Grupo.Horarios.FirstOrDefault();
+
+                return new OfertaCursoViewModel
+                {
+                    GrupoId = d.GrupoId,
+                    CursoCodigo = d.Grupo.Curso.Codigo,
+                    CursoNombre = d.Grupo.Curso.Nombre,
+                    NumeroGrupo = d.Grupo.NumeroGrupo,
+                    PeriodoNombre = matricula.PeriodoAcademico.NombrePeriodo,
+                    DocenteNombre = d.Grupo.DocentePerfil?.User?.NombreCompleto,
+                    Modalidad = d.Grupo.Modalidad,
+                    Aula = d.Grupo.Aula,
+                    CupoMaximo = d.Grupo.CupoMaximo,
+                    DiaSemana = horario?.DiaSemana,
+                    HorarioTexto = horario != null
+                        ? $"{horario.HoraInicio:hh\\:mm} - {horario.HoraFinal:hh\\:mm}"
+                        : null
+                };
+            }).ToList();
+
+            var model = new ComprobanteMatriculaViewModel
+            {
+                MatriculaId = matricula.MatriculaId,
+                NombreEstudiante = estudiante.User.NombreCompleto,
+                Carnet = estudiante.Carnet,
+                Correo = estudiante.User.Email ?? string.Empty,
+                Carrera = estudiante.Carrera.Nombre,
+                PeriodoNombre = matricula.PeriodoAcademico.NombrePeriodo,
+                Estado = matricula.Estado,
+                FechaCreacion = matricula.FechaCreacion,
+                FechaConfirmada = matricula.FechaConfirmada,
+                TotalCursos = cursos.Count,
+                TotalCreditos = detalles.Sum(d => d.Grupo.Curso.Creditos),
+                Cursos = cursos
+            };
+
+            return View(model);
         }
     }
 }

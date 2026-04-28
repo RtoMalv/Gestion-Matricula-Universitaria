@@ -15,19 +15,33 @@
 
             @if (User.IsInRole("Administrador"))
             {
-                <a asp-controller="Carreras" asp-action="Index" class="btn btn-primary">Ir a Carreras</a>
+                <a asp-controller="Carreras" asp-action="Index" class="btn btn-primary">
+                    Ir a Carreras
+                </a>
             }
             else if (User.IsInRole("Estudiante"))
             {
-                <a asp-controller="Matriculas" asp-action="Index" class="btn btn-primary">Ir a Mi Matrícula</a>
+                <a asp-controller="Matriculas" asp-action="Oferta" class="btn btn-primary">
+                    Ir a Oferta académica
+                </a>
+            }
+            else if (User.IsInRole("Docente"))
+            {
+                <div class="alert alert-info d-inline-block mt-3">
+                    Sesión iniciada como docente.
+                </div>
             }
         </div>
     }
     else
     {
         <div class="mt-4">
-            <a asp-controller="Account" asp-action="Login" class="btn btn-primary me-2">Iniciar sesión</a>
-            <a asp-controller="Account" asp-action="Register" class="btn btn-outline-primary">Registrarse</a>
+            <a asp-controller="Account" asp-action="Login" class="btn btn-primary me-2">
+                Iniciar sesión
+            </a>
+            <a asp-controller="Account" asp-action="Register" class="btn btn-outline-primary">
+                Registrarse
+            </a>
         </div>
     }
 </div>

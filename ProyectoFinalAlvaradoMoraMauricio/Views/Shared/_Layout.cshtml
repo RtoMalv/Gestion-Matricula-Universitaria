@@ -13,7 +13,8 @@
             <div class="container-fluid">
                 <a class="navbar-brand" asp-controller="Home" asp-action="Index">Gestión de Matrícula</a>
 
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Mostrar navegación">
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain"
+                        aria-controls="navbarMain" aria-expanded="false" aria-label="Mostrar navegación">
                     <span class="navbar-toggler-icon"></span>
                 </button>
 
@@ -68,7 +69,9 @@
                             <li class="nav-item">
                                 <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
                                     @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-link nav-link" style="text-decoration:none;">Cerrar sesión</button>
+                                    <button type="submit" class="btn btn-link nav-link" style="text-decoration:none;">
+                                        Cerrar sesión
+                                    </button>
                                 </form>
                             </li>
                         }

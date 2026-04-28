@@ -6,27 +6,45 @@
 
 <h2>Mi matrícula</h2>
 
-@if (Model.MatriculaId == 0)
+@if (Model == null || Model.MatriculaId == 0)
 {
     <div class="alert alert-info">
-        No tiene una matrícula en borrador o confirmada para mostrar.
+        No tiene una matrícula registrada para mostrar.
     </div>
 
     <a asp-action="Oferta" class="btn btn-primary">Ir a oferta académica</a>
 }
 else
 {
-    <div class="mb-3">
-        <p><strong>Período:</strong> @Model.PeriodoNombre</p>
-        <p><strong>Estado:</strong> @Model.Estado</p>
-        <p><strong>Fecha de creación:</strong> @Model.FechaCreacion</p>
-        @if (Model.FechaConfirmada.HasValue)
-        {
-            <p><strong>Fecha confirmada:</strong> @Model.FechaConfirmada</p>
-        }
+    <div class="card mb-4">
+        <div class="card-header">
+            Información general de la matrícula
+        </div>
+        <div class="card-body">
+            <p><strong>Período:</strong> @Model.PeriodoNombre</p>
+            <p><strong>Estado:</strong> @Model.Estado</p>
+            <p><strong>Fecha de creación:</strong> @Model.FechaCreacion</p>
+
+            @if (Model.FechaConfirmada.HasValue)
+            {
+                <p><strong>Fecha de confirmación:</strong> @Model.FechaConfirmada</p>
+            }
+        </div>
     </div>
 
-    <a asp-action="Oferta" class="btn btn-primary mb-3">Agregar más cursos</a>
+    <div class="mb-3">
+        @if (Model.Estado == "Borrador")
+        {
+            <a asp-action="Oferta" class="btn btn-primary me-2">Agregar más cursos</a>
+        }
+
+        @if (Model.Estado == "Confirmada")
+        {
+            <a asp-action="Comprobante" asp-route-id="@Model.MatriculaId" class="btn btn-outline-primary me-2">
+                Ver comprobante
+            </a>
+        }
+    </div>
 
     <table class="table table-bordered table-striped">
         <thead>
@@ -35,37 +53,63 @@ else
                 <th>Grupo</th>
                 <th>Docente</th>
                 <th>Modalidad</th>
+                <th>Aula</th>
                 <th>Horario</th>
                 <th style="width:120px;">Acción</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var item in Model.CursosMatriculados)
+            @if (Model.CursosMatriculados != null && Model.CursosMatriculados.Any())
+            {
+                @foreach (var item in Model.CursosMatriculados)
+                {
+                    <tr>
+                        <td>@item.CursoCodigo - @item.CursoNombre</td>
+                        <td>@item.NumeroGrupo</td>
+                        <td>@(string.IsNullOrWhiteSpace(item.DocenteNombre) ? "Sin asignar" : item.DocenteNombre)</td>
+                        <td>@item.Modalidad</td>
+                        <td>@item.Aula</td>
+                        <td>
+                            @if (!string.IsNullOrWhiteSpace(item.DiaSemana) || !string.IsNullOrWhiteSpace(item.HorarioTexto))
+                            {
+                                @($"{item.DiaSemana} {item.HorarioTexto}")
+                            }
+                            else
+                            {
+                                <span>Sin horario definido</span>
+                            }
+                        </td>
+                        <td>
+                            @if (Model.Estado == "Borrador")
+                            {
+                                <form asp-action="QuitarGrupo" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="matriculaId" value="@Model.MatriculaId" />
+                                    <input type="hidden" name="grupoId" value="@item.GrupoId" />
+                                    <button type="submit" class="btn btn-danger btn-sm">Quitar</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <span class="text-muted">—</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+            else
             {
                 <tr>
-                    <td>@item.CursoCodigo - @item.CursoNombre</td>
-                    <td>@item.NumeroGrupo</td>
-                    <td>@item.DocenteNombre</td>
-                    <td>@item.Modalidad</td>
-                    <td>@item.DiaSemana @item.HorarioTexto</td>
-                    <td>
-                        @if (Model.Estado == "Borrador")
-                        {
-                            <form asp-action="QuitarGrupo" method="post">
-                                <input type="hidden" name="matriculaId" value="@Model.MatriculaId" />
-                                <input type="hidden" name="grupoId" value="@item.GrupoId" />
-                                <button type="submit" class="btn btn-danger btn-sm">Quitar</button>
-                            </form>
-                        }
-                    </td>
+                    <td colspan="7">No hay cursos agregados en la matrícula.</td>
                 </tr>
             }
         </tbody>
     </table>
 
-    @if (Model.Estado == "Borrador" && Model.CursosMatriculados.Any())
+    @if (Model.Estado == "Borrador" && Model.CursosMatriculados != null && Model.CursosMatriculados.Any())
     {
-        <form asp-action="Confirmar" method="post">
+        <form asp-action="Confirmar" method="post" class="mt-3">
+            @Html.AntiForgeryToken()
             <input type="hidden" name="matriculaId" value="@Model.MatriculaId" />
             <button type="submit" class="btn btn-success">Confirmar matrícula</button>
         </form>
